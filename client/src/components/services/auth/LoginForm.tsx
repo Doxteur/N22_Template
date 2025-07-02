@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Eye, EyeOff, Mail, Lock, ArrowRight, AlertCircle } from "lucide-react";
-import { login, clearError } from "@/app/features/auth/authSlice";
+import { login } from "@/app/features/auth/authSlice";
 import { RootState, AppDispatch } from "@/app/store";
 import { useNavigate, useLocation } from "react-router";
 
@@ -20,11 +20,6 @@ function LoginForm() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [formErrors, setFormErrors] = useState<{ email?: string; password?: string }>({});
-
-  // Effacer les erreurs au montage du composant
-  useEffect(() => {
-    dispatch(clearError());
-  }, [dispatch]);
 
   const validateForm = (formData: FormData) => {
     const errors: { email?: string; password?: string } = {};
@@ -66,23 +61,24 @@ function LoginForm() {
     dispatch(login({ email, password }))
       .unwrap()
       .then((response) => {
-        console.log(response);
-        // Rediriger vers la page demandée ou la page d'accueil
+        console.log('Connexion réussie:', response);
+        // Redirection seulement en cas de succès
         const from = location.state?.from || "/";
         navigate(from, { replace: true });
       })
       .catch((error) => {
-        console.error(error);
+        console.error('Erreur de connexion:', error);
+        // Pas de redirection en cas d'erreur
       });
   };
 
-  // Redirection après connexion réussie (géré par le middleware)
+  // Redirection après connexion réussie (seulement si authentifié)
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && !loading && !error) {
       const from = location.state?.from || "/";
       navigate(from, { replace: true });
     }
-  }, [isAuthenticated, navigate, location]);
+  }, [isAuthenticated, loading, error, navigate, location]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted/20 p-4">
@@ -243,7 +239,7 @@ function LoginForm() {
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-3 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed group"
+                  className=" hover:cursor-pointer w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-3 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed group"
                 >
                   {loading ? (
                     <motion.div
@@ -264,44 +260,6 @@ function LoginForm() {
                 </Button>
               </motion.div>
             </form>
-
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.8, duration: 0.5 }}
-              className="relative"
-            >
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-border/50" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">
-                  Ou continuer avec
-                </span>
-              </div>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.9, duration: 0.5 }}
-              className="grid grid-cols-2 gap-3"
-            >
-              <Button
-                variant="outline"
-                className="bg-input/30 border-border/50 hover:bg-input/50 text-card-foreground transition-all duration-200"
-                disabled={loading}
-              >
-                Google
-              </Button>
-              <Button
-                variant="outline"
-                className="bg-input/30 border-border/50 hover:bg-input/50 text-card-foreground transition-all duration-200"
-                disabled={loading}
-              >
-                GitHub
-              </Button>
-            </motion.div>
 
             <motion.div
               initial={{ opacity: 0 }}

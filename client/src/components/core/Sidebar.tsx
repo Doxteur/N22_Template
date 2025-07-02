@@ -1,10 +1,7 @@
 import { Link, useLocation } from 'react-router';
+import { useDispatch } from 'react-redux';
 import {
   Home,
-  Users,
-  Settings,
-  BarChart2,
-  FileText,
   LogOut,
   ChevronLeft,
   ChevronRight
@@ -12,18 +9,27 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
+import { logout } from '@/app/features/auth/authSlice';
+import { AppDispatch } from '@/app/store';
 
 const navigation = [
   { name: 'Accueil', href: '/', icon: Home },
-  { name: 'Utilisateurs', href: '/users', icon: Users },
-  { name: 'Statistiques', href: '/stats', icon: BarChart2 },
-  { name: 'Documents', href: '/documents', icon: FileText },
-  { name: 'Paramètres', href: '/settings', icon: Settings },
 ];
 
 function Sidebar() {
   const location = useLocation();
+  const dispatch = useDispatch<AppDispatch>();
   const [isCollapsed, setIsCollapsed] = useState(false);
+
+  const handleLogout = async () => {
+    try {
+      await dispatch(logout()).unwrap();
+      // La redirection sera gérée par le middleware d'authentification
+      console.log('Déconnexion réussie');
+    } catch (error) {
+      console.error('Erreur lors de la déconnexion:', error);
+    }
+  };
 
   return (
     <div
@@ -116,12 +122,13 @@ function Sidebar() {
 
       <div className="border-t border-border/40 bg-gradient-to-t from-background to-background/50 p-4">
         <button
+          onClick={handleLogout}
           className={cn(
-            "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-base text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors",
+            " hover:cursor-pointer flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-base text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors group",
             isCollapsed && "justify-center"
           )}
         >
-          <div className="p-2 rounded-lg bg-muted/50 text-muted-foreground">
+          <div className="p-2 rounded-lg bg-muted/50 text-muted-foreground group-hover:bg-destructive/10 group-hover:text-destructive transition-colors">
             <LogOut className="h-5 w-5" />
           </div>
           <AnimatePresence>
@@ -131,6 +138,7 @@ function Sidebar() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.15 }}
+                className="group-hover:text-destructive transition-colors"
               >
                 Déconnexion
               </motion.span>

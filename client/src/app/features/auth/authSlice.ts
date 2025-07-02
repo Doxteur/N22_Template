@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { AxiosError } from 'axios';
 import axiosInstance from '@/app/utils/axios';
 import {
   AuthState,
@@ -7,6 +8,12 @@ import {
   AuthResponse,
 } from './types';
 
+// Type pour la réponse d'erreur de l'API
+interface ApiErrorResponse {
+  errors?: Array<{ message: string }>;
+  message?: string;
+}
+
 // Thunks
 export const login = createAsyncThunk<AuthResponse, LoginCredentials, { rejectValue: string }>(
   'auth/login',
@@ -14,8 +21,27 @@ export const login = createAsyncThunk<AuthResponse, LoginCredentials, { rejectVa
     try {
       const { data } = await axiosInstance.post<AuthResponse>('/auth/login', credentials);
       return data;
-    } catch (error: unknown) {
-      return rejectWithValue(error instanceof Error ? error.message : 'Une erreur est survenue');
+    } catch (error) {
+      const axiosError = error as AxiosError;
+      // Extraire le message d'erreur de la réponse de l'API
+      if (axiosError.response?.data && typeof axiosError.response.data === 'object') {
+        const responseData = axiosError.response.data as ApiErrorResponse;
+        if (responseData.errors && responseData.errors.length > 0) {
+          // Si l'API retourne un tableau d'erreurs
+          return rejectWithValue(responseData.errors[0].message);
+        } else if (responseData.message) {
+          // Si l'API retourne un message d'erreur direct
+          return rejectWithValue(responseData.message);
+        }
+      }
+
+      // Fallback sur le message d'erreur d'Axios
+      if (axiosError.message) {
+        return rejectWithValue(axiosError.message);
+      }
+
+      // Message par défaut
+      return rejectWithValue('Une erreur est survenue');
     }
   }
 );
@@ -26,8 +52,27 @@ export const register = createAsyncThunk<AuthResponse, RegisterCredentials, { re
     try {
       const { data } = await axiosInstance.post<AuthResponse>('/auth/register', credentials);
       return data;
-    } catch (error: unknown) {
-      return rejectWithValue(error instanceof Error ? error.message : 'Une erreur est survenue');
+    } catch (error) {
+      const axiosError = error as AxiosError;
+      // Extraire le message d'erreur de la réponse de l'API
+      if (axiosError.response?.data && typeof axiosError.response.data === 'object') {
+        const responseData = axiosError.response.data as ApiErrorResponse;
+        if (responseData.errors && responseData.errors.length > 0) {
+          // Si l'API retourne un tableau d'erreurs
+          return rejectWithValue(responseData.errors[0].message);
+        } else if (responseData.message) {
+          // Si l'API retourne un message d'erreur direct
+          return rejectWithValue(responseData.message);
+        }
+      }
+
+      // Fallback sur le message d'erreur d'Axios
+      if (axiosError.message) {
+        return rejectWithValue(axiosError.message);
+      }
+
+      // Message par défaut
+      return rejectWithValue('Une erreur est survenue');
     }
   }
 );
@@ -70,6 +115,7 @@ const authSlice = createSlice({
         state.isAuthenticated = true;
         state.user = action.payload.user;
         state.token = action.payload.token;
+        localStorage.setItem('token', action.payload.token);
       })
       .addCase(login.rejected, (state, action: PayloadAction<string | undefined>) => {
         state.loading = false;
@@ -85,6 +131,7 @@ const authSlice = createSlice({
         state.isAuthenticated = true;
         state.user = action.payload.user;
         state.token = action.payload.token;
+        localStorage.setItem('token', action.payload.token);
       })
       .addCase(register.rejected, (state, action: PayloadAction<string | undefined>) => {
         state.loading = false;
