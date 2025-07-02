@@ -2,14 +2,9 @@ import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate, useLocation } from 'react-router';
 import { RootState } from '@/app/store';
+import { ProtectedRouteProps } from '@/components/services/auth/type';
 
-interface AuthMiddlewareProps {
-  children: React.ReactNode;
-  requireAuth?: boolean;
-  redirectTo?: string;
-}
-
-export const AuthMiddleware: React.FC<AuthMiddlewareProps> = ({
+export const AuthMiddleware: React.FC<ProtectedRouteProps> = ({
   children,
   requireAuth = true,
   redirectTo = '/login'

@@ -13,15 +13,13 @@ function LoginForm() {
   const { loading, error, isAuthenticated } = useSelector(
     (state: RootState) => state.auth
   );
-  const user = useSelector((state: RootState) => state.auth.user);
-  console.log(user);
   const navigate = useNavigate();
   const location = useLocation();
 
   const [showPassword, setShowPassword] = useState(false);
   const [formErrors, setFormErrors] = useState<{ email?: string; password?: string }>({});
 
-  const validateForm = (formData: FormData) => {
+  const validateForm = (formData: FormData): boolean => {
     const errors: { email?: string; password?: string } = {};
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;

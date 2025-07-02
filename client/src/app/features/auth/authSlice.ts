@@ -6,13 +6,8 @@ import {
   LoginCredentials,
   RegisterCredentials,
   AuthResponse,
-} from './types';
-
-// Type pour la réponse d'erreur de l'API
-interface ApiErrorResponse {
-  errors?: Array<{ message: string }>;
-  message?: string;
-}
+  ApiErrorResponse,
+} from '@/components/services/auth/type';
 
 // Thunks
 export const login = createAsyncThunk<AuthResponse, LoginCredentials, { rejectValue: string }>(
