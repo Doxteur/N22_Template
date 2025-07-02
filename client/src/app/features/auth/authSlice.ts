@@ -14,8 +14,8 @@ export const login = createAsyncThunk<AuthResponse, LoginCredentials, { rejectVa
     try {
       const { data } = await axiosInstance.post<AuthResponse>('/auth/login', credentials);
       return data;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || error.message);
+    } catch (error: unknown) {
+      return rejectWithValue(error instanceof Error ? error.message : 'Une erreur est survenue');
     }
   }
 );
@@ -26,8 +26,8 @@ export const register = createAsyncThunk<AuthResponse, RegisterCredentials, { re
     try {
       const { data } = await axiosInstance.post<AuthResponse>('/auth/register', credentials);
       return data;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || error.message);
+    } catch (error: unknown) {
+      return rejectWithValue(error instanceof Error ? error.message : 'Une erreur est survenue');
     }
   }
 );
@@ -70,7 +70,6 @@ const authSlice = createSlice({
         state.isAuthenticated = true;
         state.user = action.payload.user;
         state.token = action.payload.token;
-        localStorage.setItem('token', action.payload.token);
       })
       .addCase(login.rejected, (state, action: PayloadAction<string | undefined>) => {
         state.loading = false;
@@ -86,7 +85,6 @@ const authSlice = createSlice({
         state.isAuthenticated = true;
         state.user = action.payload.user;
         state.token = action.payload.token;
-        localStorage.setItem('token', action.payload.token);
       })
       .addCase(register.rejected, (state, action: PayloadAction<string | undefined>) => {
         state.loading = false;
